@@ -63,7 +63,7 @@ footer {background-color:#333; color:white; text-align:center; padding:15px 0; m
 </footer>
 
 <!-- صوت الإشعار -->
-<audio id="notificationSound" src="sounds/notification.mp3" preload="auto"></audio>
+<audio id="notificationSound" src="sounds/confirm.mp3" preload="auto"></audio>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -81,103 +81,75 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const notificationSound = document.getElementById("notificationSound");
-let soundEnabled = false;
 let orders = [];
-
-document.getElementById("enableSoundBtn").addEventListener("click", () => {
-  notificationSound.play().then(() => {
-    notificationSound.pause();
-    notificationSound.currentTime = 0;
-    soundEnabled = true;
-    document.getElementById("enableSoundBtn").style.display = "none";
-    alert("تم تفعيل صوت الإشعارات!");
-  }).catch(err => console.log("Audio play error:", err));
-});
-
-// ترجمة الصفحة
-const translations = {
-ar: {pageTitle:"تفاصيل الطلبات - الجرو", latest:"أحدث 5 طلبات", all:"جميع الطلبات الأخرى", customer:"الزبون", orders:"الطلبات", total:"المبلغ", date:"التاريخ", status:"الحالة", confirmed:"مؤكد", canceled:"ملغي", footer:"&copy; 2025 Al Jarou. جميع الحقوق محفوظة.", button:"English"},
-en: {pageTitle:"Order Details - Al Jarou", latest:"Latest 5 Orders", all:"All Other Orders", customer:"Customer", orders:"Orders", total:"Total", date:"Date", status:"Status", confirmed:"Confirmed", canceled:"Canceled", footer:"&copy; 2025 Al Jarou. All rights reserved.", button:"العربية"}
-};
 let currentLang = 'ar';
+const audio = new Audio('sounds/notification.mp3'); // ضع مسار صوت الإشعار هنا
 
-function toggleLang() {
-currentLang = currentLang==='ar'?'en':'ar';
-const t = translations[currentLang];
-document.getElementById('page-title').innerHTML = t.pageTitle;
-document.getElementById('latest-title').textContent = t.latest;
-document.getElementById('all-title').textContent = t.all;
-document.getElementById('th-customer').textContent = t.customer;
-document.getElementById('th-orders').textContent = t.orders;
-document.getElementById('th-total').textContent = t.total;
-document.getElementById('th-date').textContent = t.date;
-document.getElementById('th-status').textContent = t.status;
-document.getElementById('footer-text').innerHTML = t.footer;
-document.querySelector('.lang-toggle').textContent = t.button;
-renderOrders();
+function playNotification() {
+  audio.play().catch(e=>console.log("Autoplay blocked, will play on user interaction later."));
 }
 
 function renderOrders() {
-const latestContainer = document.getElementById("latest-orders");
-const tableBody = document.getElementById("table-orders");
-latestContainer.innerHTML = "";
-tableBody.innerHTML = "";
+  const latestContainer = document.getElementById("latest-orders");
+  const tableBody = document.getElementById("table-orders");
+  latestContainer.innerHTML = "";
+  tableBody.innerHTML = "";
 
-const latestOrders = orders.slice(0,5);
-const otherOrders = orders.slice(5);
+  const latestOrders = orders.slice(0,5);
+  const otherOrders = orders.slice(5);
 
-latestOrders.forEach((order,index)=>{
-const div = document.createElement("div");
-div.className="order-card";
-div.innerHTML=`
-<h3>طلب رقم #${index+1}</h3>
-<p><strong>${order.name}</strong></p>
-<p><strong>${translations[currentLang].orders}</strong>: ${order.items}</p>
-<p class="price">${translations[currentLang].total}: ${order.total} ₪</p>
-<p>${translations[currentLang].date}: ${order.date}</p>
-<span class="status ${order.status}">${translations[currentLang][order.status]}</span>
-`;
-latestContainer.appendChild(div);
-});
+  latestOrders.forEach((order,index)=>{
+    const div = document.createElement("div");
+    div.className="order-card";
+    div.innerHTML=`
+      <h3>طلب رقم #${index+1}</h3>
+      <p><strong>${order.name}</strong></p>
+      <p><strong>الطلبات:</strong> ${order.items}</p>
+      <p class="price">المبلغ: ${order.total} ₪</p>
+      <p>التاريخ: ${order.date}</p>
+      <span class="status ${order.status}">${order.status}</span>
+    `;
+    latestContainer.appendChild(div);
+  });
 
-otherOrders.forEach((order,index)=>{
-const row=document.createElement("tr");
-row.innerHTML=`
-<td><strong>#${index+6}</strong> - ${order.name}</td>
-<td>${order.items}</td>
-<td>${order.total} ₪</td>
-<td>${order.date}</td>
-<td><span class="status ${order.status}">${translations[currentLang][order.status]}</span></td>
-`;
-tableBody.appendChild(row);
-});
+  otherOrders.forEach((order,index)=>{
+    const row=document.createElement("tr");
+    row.innerHTML=`
+      <td><strong>#${index+6}</strong> - ${order.name}</td>
+      <td>${order.items}</td>
+      <td>${order.total} ₪</td>
+      <td>${order.date}</td>
+      <td><span class="status ${order.status}">${order.status}</span></td>
+    `;
+    tableBody.appendChild(row);
+  });
 }
 
-// جلب البيانات مباشرة من Firestore ومراقبة التحديثات الحية
+// الاستماع للتغيرات المباشرة في Firebase (Realtime)
 db.collection("orders")
 .orderBy("date","desc")
-.onSnapshot(snapshot => {
-  const newOrders = snapshot.docs.map(doc => {
+.onSnapshot(snapshot=>{
+  const newOrders = snapshot.docs.map(doc=>{
     const data = doc.data();
     return {
       id: doc.id,
       name: data.customerName,
-      items: data.drinksOrder.map(drink => `${drink.drinkName} ×${drink.quantity} ${drink.sugarChoice===false ? '(بدون سكر)' : '(مع سكر)'} - ${drink.price} ₪`).join('، '),
+      items: data.drinksOrder.map(drink=>`${drink.drinkName} ×${drink.quantity} ${drink.sugarChoice===false ? '(بدون سكر)' : '(مع سكر)'} - ${drink.price} ₪`).join('، '),
       total: data.totalPrice,
       date: `${data.date} ${data.time}`,
-      status: data.status || "confirmed"
-    };
+      status: data.status || "مؤكد"
+    }
   });
 
-  // تشغيل الصوت إذا هناك طلب جديد بعد تفعيل الصوت
-  if (soundEnabled && newOrders.length > orders.length) {
-    notificationSound.play().catch(e=>console.log("Error playing notification:",e));
+  // تحقق إذا جاء طلب جديد
+  if(orders.length && newOrders[0].id !== orders[0].id){
+    playNotification(); // تشغيل صوت الإشعار
   }
 
   orders = newOrders;
   renderOrders();
 });
 </script>
+
 </body>
 </html>
