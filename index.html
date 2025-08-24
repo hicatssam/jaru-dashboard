@@ -174,7 +174,8 @@ footer {
 <div class="card-orders" id="latest-orders"></div>
 
 <h2 id="all-title">جميع الطلبات الأخرى | All Other Orders</h2>
-<button id="exportExcelBtn">تصدير إلى Excel</button>
+<button id="exportExcelBtn" style="background:#FFC501;color:#fff;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">تصدير Excel</button>
+
 <table>
 <thead>
 <tr>
@@ -199,6 +200,8 @@ footer {
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 
 <script>
 const firebaseConfig = {
@@ -296,6 +299,13 @@ db.collection("orders")
       status: data.status || "confirmed"
     };
   });
+
+  document.getElementById('exportExcelBtn').addEventListener('click', ()=>{
+  const table = document.querySelector('table'); // تأكد أن الجدول موجود
+  if(!table) return alert("الجدول غير موجود!");
+  const wb = XLSX.utils.table_to_book(table, {sheet:"Orders"});
+  XLSX.writeFile(wb, 'Orders.xlsx');
+});
 
   // تشغيل الصوت عند وصول أي طلب جديد
   if(orders.length && newOrders[0].id !== orders[0].id){
