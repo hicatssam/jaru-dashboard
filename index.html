@@ -13,12 +13,13 @@ header img { height:60px; position:absolute; right:20px; top:15px; }
 
 .container { max-width:1200px; margin:0 auto; padding:20px; }
 .card-orders { display:flex; flex-wrap:wrap; gap:20px; margin:30px 0; }
-.order-card { background: linear-gradient(to right, #fff8e1, #ffe082); border-radius:20px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1); flex:1 1 calc(33.333% - 20px); min-width:280px; transition:0.3s ease; }
+.order-card { background: linear-gradient(135deg, #fff8e1, #ffe082); border-radius:20px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1); flex:1 1 calc(33.333% - 20px); min-width:280px; transition:0.3s ease; position: relative; }
 .order-card:hover { transform: scale(1.02); box-shadow:0 6px 18px rgba(0,0,0,0.15); }
 .order-card h3 {margin:0 0 10px; color:#222;}
 .order-card p {margin:5px 0;}
 .order-card .price {font-weight:bold; color:#e53935;}
 .order-card .status {padding:6px 12px; border-radius:20px; font-size:14px; font-weight:bold; display:inline-block; margin-top:10px;}
+.order-card .new-badge { position:absolute; top:-10px; right:-10px; background-color:#e53935; color:#fff; font-size:12px; font-weight:bold; padding:6px 12px; border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,0.3); }
 
 table { width:100%; border-collapse: collapse; background-color:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
 th, td { padding:12px 10px; text-align:center; font-size:14px; word-wrap:break-word; }
@@ -120,44 +121,46 @@ function renderOrders() {
   if(!orders.length) return;
 
   // ترتيب الطلبات حسب التاريخ + الوقت (الأحدث أولاً)
-  const sortedOrders = orders.sort((a, b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`));
+  const sortedOrders = orders.sort((a,b) => {
+    const dtA = new Date(`${a.date}T${a.time}`);
+    const dtB = new Date(`${b.date}T${b.time}`);
+    return dtB - dtA;
+  });
 
-  const latestOrders = sortedOrders.slice(0, 3);
+  const latestOrders = sortedOrders.slice(0,3);
   const otherOrders = sortedOrders.slice(3);
 
-  // عرض أحدث 3 طلبات
-  latestOrders.forEach((order, index) => {
-  const div = document.createElement("div");
-  div.className = "order-card";
+  latestOrders.forEach((order,index) => {
+    const div = document.createElement("div");
+    div.className = "order-card";
 
-  const drinks = order.drinksOrder.map(d => {
-    const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
-    return `${d.drinkName} ×${d.quantity} ${sugar}`;
-  }).join('، ');
-
-  div.innerHTML = `
-    <div class="new-badge">New</div>
-    <h3>${translations[currentLang].latest} #${index + 1}</h3>
-    <p><strong>${order.name}</strong></p>
-    <p><strong>${translations[currentLang].orders}</strong>: ${drinks}</p>
-    <p>${translations[currentLang].payment}: <strong>${order.paymentMethod || 'Cash'}</strong></p>
-    <p class="price">${translations[currentLang].total}: ${order.total} ₪</p>
-    <p>${translations[currentLang].date}: ${order.date} ${order.time}</p>
-    <span class="status ${order.status}">${translations[currentLang][order.status]}</span>
-  `;
-  latestContainer.appendChild(div);
-});
-
-  // عرض باقي الطلبات في الجدول
-  otherOrders.forEach((order, index) => {
-    const row = document.createElement("tr");
     const drinks = order.drinksOrder.map(d => {
       const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
       return `${d.drinkName} ×${d.quantity} ${sugar}`;
     }).join('، ');
 
+    div.innerHTML = `
+      <div class="new-badge">New</div>
+      <h3>${translations[currentLang].latest} #${index+1}</h3>
+      <p><strong>${order.name}</strong></p>
+      <p><strong>${translations[currentLang].orders}</strong>: ${drinks}</p>
+      <p>${translations[currentLang].payment}: <strong>${order.paymentMethod || 'Cash'}</strong></p>
+      <p class="price">${translations[currentLang].total}: ${order.total} ₪</p>
+      <p>${translations[currentLang].date}: ${order.date} ${order.time}</p>
+      <span class="status ${order.status}">${translations[currentLang][order.status]}</span>
+    `;
+    latestContainer.appendChild(div);
+  });
+
+  otherOrders.forEach((order,index)=>{
+    const row = document.createElement("tr");
+    const drinks = order.drinksOrder.map(d=>{
+      const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
+      return `${d.drinkName} ×${d.quantity} ${sugar}`;
+    }).join('، ');
+
     row.innerHTML = `
-      <td><strong>#${index + 4}</strong> - ${order.name}</td>
+      <td><strong>#${index+4}</strong> - ${order.name}</td>
       <td>${drinks}</td>
       <td>${order.total} ₪</td>
       <td>${order.date} ${order.time}</td>
@@ -184,7 +187,7 @@ db.collection("orders").onSnapshot(snapshot => {
     };
   });
 
-  // تشغيل صوت الإشعار عند وجود طلب جديد
+  // تشغيل صوت الإشعار عند إضافة طلب جديد
   if(orders.length && newOrders[0].id !== orders[0].id){
     notificationSound.play().catch(e=>console.log("Error playing notification:",e));
   }
@@ -193,12 +196,12 @@ db.collection("orders").onSnapshot(snapshot => {
   renderOrders();
 });
 
-// زر تصدير Excel
+// تصدير Excel
 document.getElementById('exportExcelBtn').addEventListener('click', ()=>{
   const table = document.querySelector('table');
   if(!table) return alert("الجدول غير موجود!");
-  const wb = XLSX.utils.table_to_book(table, {sheet:"Orders"});
-  XLSX.writeFile(wb, 'Orders.xlsx');
+  const wb = XLSX.utils.table_to_book(table,{sheet:"Orders"});
+  XLSX.writeFile(wb,'Orders.xlsx');
 });
 </script>
 
