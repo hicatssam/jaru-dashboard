@@ -22,7 +22,7 @@ header img { height:60px; position:absolute; right:20px; top:15px; }
 .order-card .new-badge {
   position: absolute;
   top: -10px;
-  left: -10px; /* بدل right */
+  left: -10px; /* تظهر على الجانب الأيسر */
   background-color: #e53935;
   color: #fff;
   font-size: 12px;
@@ -53,8 +53,8 @@ footer { background-color:#333; color:white; text-align:center; padding:15px 0; 
 <h1 id="page-title">تفاصيل الطلبات - الجرو | Order Details</h1>
 <button class="lang-toggle" onclick="toggleLang()">English</button>
 </header>
-<button id="enableSoundBtn">تفعيل صوت الإشعارات</button>
 
+<button id="enableSoundBtn">تفعيل صوت الإشعارات</button>
 <audio id="notificationSound" src="sounds/confirm.mp3" preload="auto"></audio>
 
 <div class="container">
@@ -83,8 +83,6 @@ footer { background-color:#333; color:white; text-align:center; padding:15px 0; 
 <p id="footer-text">&copy; 2025 Al Jarou. جميع الحقوق محفوظة. | All rights reserved.</p>
 </footer>
 
-<audio id="notificationSound" src="sounds/confirm.mp3" preload="auto"></audio>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -100,16 +98,16 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const notificationSound = document.getElementById("notificationSound");
 let orders = [];
+const notificationSound = document.getElementById("notificationSound");
+let soundEnabled = false;
 
 const translations = {
   ar: {pageTitle:"تفاصيل الطلبات - الجرو", latest:"أحدث 3 طلبات", all:"جميع الطلبات الأخرى", customer:"الزبون", orders:"الطلبات", total:"المبلغ", date:"التاريخ", payment:"طريقة الدفع", status:"الحالة", confirmed:"مؤكد", canceled:"ملغي", footer:"&copy; 2025 Al Jarou. جميع الحقوق محفوظة.", button:"English"},
   en: {pageTitle:"Order Details - Al Jarou", latest:"Latest 3 Orders", all:"All Other Orders", customer:"Customer", orders:"Orders", total:"Total", date:"Date", payment:"Payment Method", status:"Status", confirmed:"Confirmed", canceled:"Canceled", footer:"&copy; 2025 Al Jarou. All rights reserved.", button:"العربية"}
 };
+
 let currentLang = 'ar';
-  const notificationSound = document.getElementById("notificationSound");
-let soundEnabled = false;
 
 function toggleLang() {
   currentLang = currentLang==='ar'?'en':'ar';
@@ -127,12 +125,14 @@ function toggleLang() {
   document.querySelector('.lang-toggle').textContent = t.button;
   renderOrders();
 }
-// تمكين الصوت بعد تفاعل المستخدم
+
+// تفعيل الصوت
 document.getElementById("enableSoundBtn").addEventListener("click", () => {
   soundEnabled = true;
-  notificationSound.play().then(() => notificationSound.pause()); // تهيئة الصوت
-  document.getElementById("enableSoundBtn").style.display = "none";
+  notificationSound.play().then(()=>notificationSound.pause());
+  document.getElementById("enableSoundBtn").style.display="none";
 });
+
 function renderOrders() {
   const latestContainer = document.getElementById("latest-orders");
   const tableBody = document.getElementById("table-orders");
@@ -141,20 +141,15 @@ function renderOrders() {
 
   if(!orders.length) return;
 
-const sortedOrders = orders.sort((a, b) => {
-  // دمج التاريخ والوقت
-  const dateTimeA = Date.parse(`${a.date} ${a.time}`);
-  const dateTimeB = Date.parse(`${b.date} ${b.time}`);
-  return dateTimeB - dateTimeA; // الأحدث أولاً
-});
+  const sortedOrders = orders.sort((a,b)=>Date.parse(`${b.date} ${b.time}`)-Date.parse(`${a.date} ${a.time}`));
   const latestOrders = sortedOrders.slice(0,3);
   const otherOrders = sortedOrders.slice(3);
 
-  latestOrders.forEach((order,index) => {
+  latestOrders.forEach((order,index)=>{
     const div = document.createElement("div");
     div.className = "order-card";
 
-    const drinks = order.drinksOrder.map(d => {
+    const drinks = order.drinksOrder.map(d=>{
       const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
       return `${d.drinkName} ×${d.quantity} ${sugar}`;
     }).join('، ');
@@ -191,8 +186,8 @@ const sortedOrders = orders.sort((a, b) => {
   });
 }
 
-db.collection("orders").onSnapshot(snapshot => {
-  const newOrders = snapshot.docs.map(doc => {
+db.collection("orders").onSnapshot(snapshot=>{
+  const newOrders = snapshot.docs.map(doc=>{
     const data = doc.data();
     return {
       id: doc.id,
@@ -202,16 +197,14 @@ db.collection("orders").onSnapshot(snapshot => {
       date: data.date,
       time: data.time,
       paymentMethod: data.paymentMethod || 'Cash',
-      status: data.status || "confirmed"
+      status: data.status || 'confirmed'
     };
   });
 
-  // تشغيل صوت الإشعار لكل طلب جديد
-  if (orders.length) {
-    newOrders.forEach(order => {
-      const exists = orders.find(o => o.id === order.id);
-      if (!exists) {
-        notificationSound.play().catch(e => console.log("Error playing notification:", e));
+  if(soundEnabled && orders.length){
+    newOrders.forEach(order=>{
+      if(!orders.find(o=>o.id===order.id)){
+        notificationSound.play().catch(e=>console.log("Error playing sound:",e));
       }
     });
   }
