@@ -154,7 +154,7 @@ function renderOrders() {
 
     const drinks = order.drinksOrder.map(d => {
       const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
-      // const price = d.price !== undefined ? d.price : Math.round(order.total / order.drinksOrder.length);
+      const price = d.price !== undefined ? d.price : Math.round(order.total / order.drinksOrder.length);
       return `${d.drinkName} ×${d.quantity} ${sugar} - ${price} ₪`;
     }).join('، ');
 
@@ -175,7 +175,7 @@ function renderOrders() {
     const drinks = order.drinksOrder.map(d => {
       const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
       const price = d.price !== undefined ? d.price : Math.round(order.total / order.drinksOrder.length);
-      return `${d.drinkName} ×${d.quantity} ${sugar} - ${price} ₪`;
+      return `${d.drinkName} ×${d.quantity} ${sugar} `;
     }).join('، ');
 
     row.innerHTML = `
