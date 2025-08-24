@@ -181,7 +181,6 @@ const sortedOrders = orders.sort((a, b) => {
   });
 }
 
-// مراقبة التحديثات من Firebase
 db.collection("orders").onSnapshot(snapshot => {
   const newOrders = snapshot.docs.map(doc => {
     const data = doc.data();
@@ -197,9 +196,14 @@ db.collection("orders").onSnapshot(snapshot => {
     };
   });
 
-  // تشغيل صوت الإشعار عند إضافة طلب جديد
-  if(orders.length && newOrders[0].id !== orders[0].id){
-    notificationSound.play().catch(e=>console.log("Error playing notification:",e));
+  // تشغيل صوت الإشعار لكل طلب جديد
+  if (orders.length) {
+    newOrders.forEach(order => {
+      const exists = orders.find(o => o.id === order.id);
+      if (!exists) {
+        notificationSound.play().catch(e => console.log("Error playing notification:", e));
+      }
+    });
   }
 
   orders = newOrders;
