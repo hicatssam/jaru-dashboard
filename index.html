@@ -144,9 +144,8 @@ function renderOrders() {
   // ترتيب الطلبات بحسب الأحدث أولاً
   const sortedOrders = orders.sort((a,b)=>Date.parse(`${b.date} ${b.time}`)-Date.parse(`${a.date} ${a.time}`));
 
-  const latestOrders = sortedOrders.slice(0,3);
-
   // عرض أحدث 3 طلبات في البطاقات
+  const latestOrders = sortedOrders.slice(0,3);
   latestOrders.forEach((order,index)=>{
     const div = document.createElement("div");
     div.className = "order-card";
@@ -169,7 +168,7 @@ function renderOrders() {
     latestContainer.appendChild(div);
   });
 
-  // عرض كل الطلبات في الجدول (يشمل أحدث 3)
+  // عرض كل الطلبات في الجدول (يشمل أحدث 3 أيضًا)
   sortedOrders.forEach((order,index)=>{
     const row = document.createElement("tr");
     const drinks = order.drinksOrder.map(d=>{
