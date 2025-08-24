@@ -5,115 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>تفاصيل الطلبات - الجرو | Order Details</title>
 <style>
-/* الخطوط الأساسية والخلفية */
 body {
   font-family: 'Cairo', sans-serif;
   background-color: #f4f4f9;
-  margin:0;
-  padding:0;
-  color:#333;
+  margin:0; padding:0; color:#333;
 }
-
-/* الرأس */
 header {
   background-color: #FFC501;
   padding: 20px;
   text-align: center;
   position: relative;
 }
+header h1 { margin:0; color:#222; font-size:32px; }
+header img { height:60px; position:absolute; right:20px; top:15px; }
+.lang-toggle { position:absolute; top:20px; left:20px; background:#fff; border:1px solid #ccc; border-radius:6px; padding:5px 10px; cursor:pointer; font-size:14px; }
 
-header h1 {
-  margin:0;
-  color:#222;
-  font-size:32px;
-}
-
-header img {
-  height: 60px;
-  position: absolute;
-  right: 20px;
-  top: 15px;
-}
-
-.lang-toggle {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background-color:#fff;
-  border:1px solid #ccc;
-  border-radius:6px;
-  padding:5px 10px;
-  cursor:pointer;
-  font-size:14px;
-}
-
-/* الحاوية */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-/* بطاقة الطلبات */
-.card-orders {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin: 30px 0;
-}
-
-.order-card {
-  background: linear-gradient(to right, #fff0c2, #ffeaa7);
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  flex: 1 1 calc(33.333% - 20px); /* 3 أعمدة في الشاشات الكبيرة */
-  min-width: 280px;
-  transition: 0.3s ease;
-}
-
-.order-card:hover {
-  transform: scale(1.02);
-  box-shadow:0 6px 18px rgba(0,0,0,0.15);
-}
-
+.container { max-width:1200px; margin:0 auto; padding:20px; }
+.card-orders { display:flex; flex-wrap:wrap; gap:20px; margin:30px 0; }
+.order-card { background: linear-gradient(to right, #fff0c2, #ffeaa7); border-radius:20px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1); flex:1 1 calc(33.333% - 20px); min-width:280px; transition:0.3s ease; }
+.order-card:hover { transform: scale(1.02); box-shadow:0 6px 18px rgba(0,0,0,0.15); }
 .order-card h3 {margin:0 0 10px; color:#222;}
 .order-card p {margin:5px 0;}
 .order-card .price {font-weight:bold; color:#e53935;}
-.order-card .status {
-  padding:6px 12px;
-  border-radius:20px;
-  font-size:14px;
-  font-weight:bold;
-  display:inline-block;
-  margin-top:10px;
-}
+.order-card .status {padding:6px 12px; border-radius:20px; font-size:14px; font-weight:bold; display:inline-block; margin-top:10px;}
 
-/* الجدول */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #fff;
-  border-radius:12px;
-  overflow: hidden;
-  box-shadow:0 4px 12px rgba(0,0,0,0.1);
-}
-
-th, td {
-  padding: 12px 10px;
-  text-align: center;
-  font-size: 14px;
-  word-wrap: break-word;
-}
-
-th {
-  background-color:#ffe082;
-  color:#444;
-}
-
+table { width:100%; border-collapse: collapse; background-color:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+th, td { padding:12px 10px; text-align:center; font-size:14px; word-wrap:break-word; }
+th { background-color:#ffe082; color:#444; }
 tr:nth-child(even) {background-color:#f9f9f9;}
 
-/* زر تصدير Excel */
 #exportExcelBtn {
   background: linear-gradient(135deg, #ff7e5f, #feb47b);
   color: #fff;
@@ -126,37 +46,13 @@ tr:nth-child(even) {background-color:#f9f9f9;}
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   margin-bottom: 20px;
 }
-#exportExcelBtn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-}
+#exportExcelBtn:hover { transform: translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.3); }
 
-/* الفوتر */
-footer {
-  background-color:#333;
-  color:white;
-  text-align:center;
-  padding:15px 0;
-  margin-top:40px;
-}
+footer { background-color:#333; color:white; text-align:center; padding:15px 0; margin-top:40px; }
 
-/* استجابة للشاشات الصغيرة */
-@media (max-width: 992px) {
-  .order-card {
-    flex: 1 1 calc(50% - 20px); /* عمودين */
-  }
-}
-
-@media (max-width: 600px) {
-  .order-card {
-    flex: 1 1 100%; /* عمود واحد */
-  }
-  header h1 {font-size:24px;}
-  th, td {font-size:12px; padding:8px;}
-  #exportExcelBtn {font-size:14px; padding:10px 15px;}
-}
+@media (max-width: 992px) { .order-card { flex:1 1 calc(50% - 20px); } }
+@media (max-width: 600px) { .order-card { flex:1 1 100%; } header h1 { font-size:24px; } th, td { font-size:12px; padding:8px; } #exportExcelBtn { font-size:14px; padding:10px 15px; } }
 </style>
-
 </head>
 <body>
 
@@ -166,15 +62,12 @@ footer {
 <button class="lang-toggle" onclick="toggleLang()">English</button>
 </header>
 
-<!-- زر تفعيل الصوت -->
-<button id="enableSoundBtn" class="enable-sound-btn">تشغيل الإشعارات</button>
-
 <div class="container">
 <h2 id="latest-title">أحدث 3 طلبات | Latest 3 Orders</h2>
 <div class="card-orders" id="latest-orders"></div>
 
 <h2 id="all-title">جميع الطلبات الأخرى | All Other Orders</h2>
-<button id="exportExcelBtn" style="background:#FFC501;color:#fff;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">تصدير Excel</button>
+<button id="exportExcelBtn">تصدير Excel</button>
 
 <table>
 <thead>
@@ -195,13 +88,11 @@ footer {
 <p id="footer-text">&copy; 2025 Al Jarou. جميع الحقوق محفوظة. | All rights reserved.</p>
 </footer>
 
-<audio id="notificationSound" src="sounds/notification.mp3" preload="auto"></audio>
+<audio id="notificationSound" src="sounds/confirm.mp3" preload="auto"></audio>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
 
 <script>
 const firebaseConfig = {
@@ -215,10 +106,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const notificationSound = new Audio('sounds/confirm.mp3'); // الصوت الافتراضي للتأكيد
+const notificationSound = document.getElementById("notificationSound");
 let orders = [];
 
-// الترجمة
 const translations = {
   ar: {pageTitle:"تفاصيل الطلبات - الجرو", latest:"أحدث 3 طلبات", all:"جميع الطلبات الأخرى", customer:"الزبون", orders:"الطلبات", total:"المبلغ", date:"التاريخ", payment:"طريقة الدفع", status:"الحالة", confirmed:"مؤكد", canceled:"ملغي", footer:"&copy; 2025 Al Jarou. جميع الحقوق محفوظة.", button:"English"},
   en: {pageTitle:"Order Details - Al Jarou", latest:"Latest 3 Orders", all:"All Other Orders", customer:"Customer", orders:"Orders", total:"Total", date:"Date", payment:"Payment Method", status:"Status", confirmed:"Confirmed", canceled:"Canceled", footer:"&copy; 2025 Al Jarou. All rights reserved.", button:"العربية"}
@@ -248,19 +138,28 @@ function renderOrders() {
   latestContainer.innerHTML = "";
   tableBody.innerHTML = "";
 
-  // ترتيب الطلبات حسب التاريخ والوقت (الأحدث أولاً)
-  const sortedOrders = orders.sort((a, b) => new Date(b.date) - new Date(a.date));
+  const sortedOrders = orders.sort((a,b)=>{
+    return new Date(`${b.date} ${b.time}`) - new Date(`${a.date} ${a.time}`);
+  });
 
-  const latestOrders = sortedOrders.slice(0,3); // أحدث 3 طلبات
+  const latestOrders = sortedOrders.slice(0,3);
   const otherOrders = sortedOrders.slice(3);
 
   latestOrders.forEach((order,index)=>{
     const div = document.createElement("div");
     div.className="order-card";
+
+    // حساب سعر كل مشروب
+    const drinks = order.drinksOrder.map(d=>{
+      const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
+      const price = d.price !== undefined ? d.price : Math.round(order.total / order.drinksOrder.length);
+      return `${d.drinkName} ×${d.quantity} ${sugar} - ${price} ₪`;
+    }).join('، ');
+
     div.innerHTML=`
       <h3>طلب رقم #${index+1}</h3>
       <p><strong>${order.name}</strong></p>
-      <p><strong>${translations[currentLang].orders}</strong>: ${order.items}</p>
+      <p><strong>${translations[currentLang].orders}</strong>: ${drinks}</p>
       <p>${translations[currentLang].payment}: <strong>${order.paymentMethod || 'Cash'}</strong></p>
       <p class="price">${translations[currentLang].total}: ${order.total} ₪</p>
       <p>${translations[currentLang].date}: ${order.date}</p>
@@ -270,10 +169,15 @@ function renderOrders() {
   });
 
   otherOrders.forEach((order,index)=>{
-    const row=document.createElement("tr");
+    const row = document.createElement("tr");
+    const drinks = order.drinksOrder.map(d=>{
+      const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
+      const price = d.price !== undefined ? d.price : Math.round(order.total / order.drinksOrder.length);
+      return `${d.drinkName} ×${d.quantity} ${sugar} - ${price} ₪`;
+    }).join('، ');
     row.innerHTML=`
       <td><strong>#${index+4}</strong> - ${order.name}</td>
-      <td>${order.items}</td>
+      <td>${drinks}</td>
       <td>${order.total} ₪</td>
       <td>${order.date}</td>
       <td>${order.paymentMethod || 'Cash'}</td>
@@ -283,31 +187,30 @@ function renderOrders() {
   });
 }
 
-// مراقبة التحديثات من Firebase وتشغيل الصوت تلقائيًا عند وصول أي طلب جديد
-db.collection("orders")
-.orderBy("date","desc")
-.onSnapshot(snapshot => {
-  const newOrders = snapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      name: data.customerName,
-      items: data.drinksOrder.map(drink => `${drink.drinkName} ×${drink.quantity} ${drink.sugarChoice===false ? '(بدون سكر)' : '(مع سكر)'} - ${drink.price} ₪`).join('، '),
-      total: data.totalPrice,
-      date: `${data.date} ${data.time}`,
-      paymentMethod: data.paymentMethod || 'Cash',
-      status: data.status || "confirmed"
-    };
-  });
-
-  document.getElementById('exportExcelBtn').addEventListener('click', ()=>{
-  const table = document.querySelector('table'); // تأكد أن الجدول موجود
+// زر تصدير Excel
+document.getElementById('exportExcelBtn').addEventListener('click', ()=>{
+  const table = document.querySelector('table');
   if(!table) return alert("الجدول غير موجود!");
   const wb = XLSX.utils.table_to_book(table, {sheet:"Orders"});
   XLSX.writeFile(wb, 'Orders.xlsx');
 });
 
-  // تشغيل الصوت عند وصول أي طلب جديد
+// مراقبة التحديثات من Firebase وتشغيل الصوت تلقائيًا
+db.collection("orders").orderBy("date","desc").onSnapshot(snapshot=>{
+  const newOrders = snapshot.docs.map(doc=>{
+    const data = doc.data();
+    return {
+      id: doc.id,
+      name: data.customerName,
+      drinksOrder: data.drinksOrder,
+      total: data.totalPrice,
+      date: data.date,
+      time: data.time,
+      paymentMethod: data.paymentMethod || 'Cash',
+      status: data.status || "confirmed"
+    };
+  });
+
   if(orders.length && newOrders[0].id !== orders[0].id){
     notificationSound.play().catch(e=>console.log("Error playing notification:",e));
   }
@@ -315,9 +218,7 @@ db.collection("orders")
   orders = newOrders;
   renderOrders();
 });
-
 </script>
-
 
 </body>
 </html>
