@@ -138,48 +138,51 @@ function renderOrders() {
   latestContainer.innerHTML = "";
   tableBody.innerHTML = "";
 
-  const sortedOrders = orders.sort((a,b)=>{
-    return new Date(`${b.date} ${b.time}`) - new Date(`${a.date} ${a.time}`);
+  // ترتيب الطلبات حسب التاريخ + الوقت (الأحدث أولاً)
+  const sortedOrders = orders.sort((a, b) => {
+    const dateA = new Date(`${a.date}T${a.time}`);
+    const dateB = new Date(`${b.date}T${b.time}`);
+    return dateB - dateA;
   });
 
-  const latestOrders = sortedOrders.slice(0,3);
+  const latestOrders = sortedOrders.slice(0, 3);
   const otherOrders = sortedOrders.slice(3);
 
-  latestOrders.forEach((order,index)=>{
+  latestOrders.forEach((order, index) => {
     const div = document.createElement("div");
-    div.className="order-card";
+    div.className = "order-card";
 
-    // حساب سعر كل مشروب
-    const drinks = order.drinksOrder.map(d=>{
+    const drinks = order.drinksOrder.map(d => {
       const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
       const price = d.price !== undefined ? d.price : Math.round(order.total / order.drinksOrder.length);
       return `${d.drinkName} ×${d.quantity} ${sugar} - ${price} ₪`;
     }).join('، ');
 
-    div.innerHTML=`
-      <h3>طلب رقم #${index+1}</h3>
+    div.innerHTML = `
+      <h3>طلب رقم #${index + 1}</h3>
       <p><strong>${order.name}</strong></p>
       <p><strong>${translations[currentLang].orders}</strong>: ${drinks}</p>
       <p>${translations[currentLang].payment}: <strong>${order.paymentMethod || 'Cash'}</strong></p>
       <p class="price">${translations[currentLang].total}: ${order.total} ₪</p>
-      <p>${translations[currentLang].date}: ${order.date}</p>
+      <p>${translations[currentLang].date}: ${order.date} ${order.time}</p>
       <span class="status ${order.status}">${translations[currentLang][order.status]}</span>
     `;
     latestContainer.appendChild(div);
   });
 
-  otherOrders.forEach((order,index)=>{
+  otherOrders.forEach((order, index) => {
     const row = document.createElement("tr");
-    const drinks = order.drinksOrder.map(d=>{
+    const drinks = order.drinksOrder.map(d => {
       const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
-      // const price = d.price !== undefined ? d.price : Math.round(order.total / order.drinksOrder.length);
+      const price = d.price !== undefined ? d.price : Math.round(order.total / order.drinksOrder.length);
       return `${d.drinkName} ×${d.quantity} ${sugar} - ${price} ₪`;
     }).join('، ');
-    row.innerHTML=`
-      <td><strong>#${index+4}</strong> - ${order.name}</td>
+
+    row.innerHTML = `
+      <td><strong>#${index + 4}</strong> - ${order.name}</td>
       <td>${drinks}</td>
       <td>${order.total} ₪</td>
-      <td>${order.date}</td>
+      <td>${order.date} ${order.time}</td>
       <td>${order.paymentMethod || 'Cash'}</td>
       <td><span class="status ${order.status}">${translations[currentLang][order.status]}</span></td>
     `;
@@ -187,38 +190,6 @@ function renderOrders() {
   });
 }
 
-// زر تصدير Excel
-document.getElementById('exportExcelBtn').addEventListener('click', ()=>{
-  const table = document.querySelector('table');
-  if(!table) return alert("الجدول غير موجود!");
-  const wb = XLSX.utils.table_to_book(table, {sheet:"Orders"});
-  XLSX.writeFile(wb, 'Orders.xlsx');
-});
-
-// مراقبة التحديثات من Firebase وتشغيل الصوت تلقائيًا
-db.collection("orders").orderBy("date","desc").onSnapshot(snapshot=>{
-  const newOrders = snapshot.docs.map(doc=>{
-    const data = doc.data();
-    return {
-      id: doc.id,
-      name: data.customerName,
-      drinksOrder: data.drinksOrder,
-      total: data.totalPrice,
-      date: data.date,
-      time: data.time,
-      paymentMethod: data.paymentMethod || 'Cash',
-      status: data.status || "confirmed"
-    };
-  });
-
-  if(orders.length && newOrders[0].id !== orders[0].id){
-    notificationSound.play().catch(e=>console.log("Error playing notification:",e));
-  }
-
-  orders = newOrders;
-  renderOrders();
-});
-</script>
 
 </body>
 </html>
