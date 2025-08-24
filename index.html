@@ -93,7 +93,6 @@ footer { background-color:#333; color:white; text-align:center; padding:15px 0; 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyCEsjPeY7773MQeSyiL6M1n4RHRl5TGAyk",
@@ -154,8 +153,7 @@ function renderOrders() {
 
     const drinks = order.drinksOrder.map(d => {
       const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
-      const price = d.price !== undefined ? d.price : Math.round(order.total / order.drinksOrder.length);
-      return `${d.drinkName} ×${d.quantity} ${sugar} - ${price} ₪`;
+      return `${d.drinkName} ×${d.quantity} ${sugar}`;
     }).join('، ');
 
     div.innerHTML = `
@@ -174,8 +172,7 @@ function renderOrders() {
     const row = document.createElement("tr");
     const drinks = order.drinksOrder.map(d => {
       const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
-      const price = d.price !== undefined ? d.price : Math.round(order.total / order.drinksOrder.length);
-      return `${d.drinkName} ×${d.quantity} ${sugar} `;
+      return `${d.drinkName} ×${d.quantity} ${sugar}`;
     }).join('، ');
 
     row.innerHTML = `
@@ -190,6 +187,39 @@ function renderOrders() {
   });
 }
 
+// مراقبة التحديثات من Firebase
+db.collection("orders").onSnapshot(snapshot => {
+  const newOrders = snapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      name: data.customerName,
+      drinksOrder: data.drinksOrder,
+      total: data.totalPrice,
+      date: data.date,
+      time: data.time,
+      paymentMethod: data.paymentMethod || 'Cash',
+      status: data.status || "confirmed"
+    };
+  });
+
+  // تشغيل صوت الإشعار عند وجود طلب جديد
+  if(orders.length && newOrders[0].id !== orders[0].id){
+    notificationSound.play().catch(e=>console.log("Error playing notification:",e));
+  }
+
+  orders = newOrders;
+  renderOrders();
+});
+
+// زر تصدير Excel
+document.getElementById('exportExcelBtn').addEventListener('click', ()=>{
+  const table = document.querySelector('table');
+  if(!table) return alert("الجدول غير موجود!");
+  const wb = XLSX.utils.table_to_book(table, {sheet:"Orders"});
+  XLSX.writeFile(wb, 'Orders.xlsx');
+});
+</script>
 
 </body>
 </html>
