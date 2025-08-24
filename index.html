@@ -127,25 +127,26 @@ function renderOrders() {
 
   // عرض أحدث 3 طلبات
   latestOrders.forEach((order, index) => {
-    const div = document.createElement("div");
-    div.className = "order-card";
+  const div = document.createElement("div");
+  div.className = "order-card";
 
-    const drinks = order.drinksOrder.map(d => {
-      const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
-      return `${d.drinkName} ×${d.quantity} ${sugar}`;
-    }).join('، ');
+  const drinks = order.drinksOrder.map(d => {
+    const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
+    return `${d.drinkName} ×${d.quantity} ${sugar}`;
+  }).join('، ');
 
-    div.innerHTML = `
-      <h3>${translations[currentLang].latest} #${index + 1}</h3>
-      <p><strong>${order.name}</strong></p>
-      <p><strong>${translations[currentLang].orders}</strong>: ${drinks}</p>
-      <p>${translations[currentLang].payment}: <strong>${order.paymentMethod || 'Cash'}</strong></p>
-      <p class="price">${translations[currentLang].total}: ${order.total} ₪</p>
-      <p>${translations[currentLang].date}: ${order.date} ${order.time}</p>
-      <span class="status ${order.status}">${translations[currentLang][order.status]}</span>
-    `;
-    latestContainer.appendChild(div);
-  });
+  div.innerHTML = `
+    <div class="new-badge">New</div>
+    <h3>${translations[currentLang].latest} #${index + 1}</h3>
+    <p><strong>${order.name}</strong></p>
+    <p><strong>${translations[currentLang].orders}</strong>: ${drinks}</p>
+    <p>${translations[currentLang].payment}: <strong>${order.paymentMethod || 'Cash'}</strong></p>
+    <p class="price">${translations[currentLang].total}: ${order.total} ₪</p>
+    <p>${translations[currentLang].date}: ${order.date} ${order.time}</p>
+    <span class="status ${order.status}">${translations[currentLang][order.status]}</span>
+  `;
+  latestContainer.appendChild(div);
+});
 
   // عرض باقي الطلبات في الجدول
   otherOrders.forEach((order, index) => {
