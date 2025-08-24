@@ -141,17 +141,18 @@ function renderOrders() {
 
   if(!orders.length) return;
 
-  // ترتيب الطلبات بحسب الأحدث أولاً
   const sortedOrders = orders.sort((a,b)=>Date.parse(`${b.date} ${b.time}`)-Date.parse(`${a.date} ${a.time}`));
 
-  // عرض أحدث 3 طلبات في البطاقات
+  // عرض أحدث 3 طلبات
   const latestOrders = sortedOrders.slice(0,3);
   latestOrders.forEach((order,index)=>{
     const div = document.createElement("div");
     div.className = "order-card";
 
     const drinks = order.drinksOrder.map(d=>{
-      const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
+      // فقط المشروبات لها خيار السكر
+      const isBeverage = ['Coffee','Tea'].includes(d.drinkName);
+      const sugar = isBeverage ? (d.sugarChoice ? '(مع سكر)' : '(بدون سكر)') : '';
       return `${d.drinkName} ×${d.quantity} ${sugar}`;
     }).join('، ');
 
@@ -168,11 +169,12 @@ function renderOrders() {
     latestContainer.appendChild(div);
   });
 
-  // عرض كل الطلبات في الجدول (يشمل أحدث 3 أيضًا)
+  // عرض كل الطلبات في الجدول
   sortedOrders.forEach((order,index)=>{
     const row = document.createElement("tr");
     const drinks = order.drinksOrder.map(d=>{
-      const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
+      const isBeverage = ['Coffee','Tea'].includes(d.drinkName);
+      const sugar = isBeverage ? (d.sugarChoice ? '(مع سكر)' : '(بدون سكر)') : '';
       return `${d.drinkName} ×${d.quantity} ${sugar}`;
     }).join('، ');
 
