@@ -22,7 +22,7 @@ header img { height:60px; position:absolute; right:20px; top:15px; }
 .order-card .new-badge {
   position: absolute;
   top: -10px;
-  left: -10px; /* تظهر على الجانب الأيسر */
+  left: -10px;
   background-color: #e53935;
   color: #fff;
   font-size: 12px;
@@ -61,7 +61,7 @@ footer { background-color:#333; color:white; text-align:center; padding:15px 0; 
 <h2 id="latest-title">أحدث 3 طلبات | Latest 3 Orders</h2>
 <div class="card-orders" id="latest-orders"></div>
 
-<h2 id="all-title">جميع الطلبات الأخرى | All Other Orders</h2>
+<h2 id="all-title">جميع الطلبات | All Orders</h2>
 <button id="exportExcelBtn">تصدير Excel</button>
 
 <table>
@@ -103,8 +103,8 @@ const notificationSound = document.getElementById("notificationSound");
 let soundEnabled = false;
 
 const translations = {
-  ar: {pageTitle:"تفاصيل الطلبات - الجرو", latest:"أحدث 3 طلبات", all:"جميع الطلبات الأخرى", customer:"الزبون", orders:"الطلبات", total:"المبلغ", date:"التاريخ", payment:"طريقة الدفع", status:"الحالة", confirmed:"مؤكد", canceled:"ملغي", footer:"&copy; 2025 Al Jarou. جميع الحقوق محفوظة.", button:"English"},
-  en: {pageTitle:"Order Details - Al Jarou", latest:"Latest 3 Orders", all:"All Other Orders", customer:"Customer", orders:"Orders", total:"Total", date:"Date", payment:"Payment Method", status:"Status", confirmed:"Confirmed", canceled:"Canceled", footer:"&copy; 2025 Al Jarou. All rights reserved.", button:"العربية"}
+  ar: {pageTitle:"تفاصيل الطلبات - الجرو", latest:"أحدث 3 طلبات", all:"جميع الطلبات", customer:"الزبون", orders:"الطلبات", total:"المبلغ", date:"التاريخ", payment:"طريقة الدفع", status:"الحالة", confirmed:"مؤكد", canceled:"ملغي", footer:"&copy; 2025 Al Jarou. جميع الحقوق محفوظة.", button:"English"},
+  en: {pageTitle:"Order Details - Al Jarou", latest:"Latest 3 Orders", all:"All Orders", customer:"Customer", orders:"Orders", total:"Total", date:"Date", payment:"Payment Method", status:"Status", confirmed:"Confirmed", canceled:"Canceled", footer:"&copy; 2025 Al Jarou. All rights reserved.", button:"العربية"}
 };
 
 let currentLang = 'ar';
@@ -141,10 +141,12 @@ function renderOrders() {
 
   if(!orders.length) return;
 
+  // ترتيب الطلبات بحسب الأحدث أولاً
   const sortedOrders = orders.sort((a,b)=>Date.parse(`${b.date} ${b.time}`)-Date.parse(`${a.date} ${a.time}`));
-  const latestOrders = sortedOrders.slice(0,3);
-  const otherOrders = sortedOrders.slice(3);
 
+  const latestOrders = sortedOrders.slice(0,3);
+
+  // عرض أحدث 3 طلبات في البطاقات
   latestOrders.forEach((order,index)=>{
     const div = document.createElement("div");
     div.className = "order-card";
@@ -167,7 +169,8 @@ function renderOrders() {
     latestContainer.appendChild(div);
   });
 
-  otherOrders.forEach((order,index)=>{
+  // عرض كل الطلبات في الجدول (يشمل أحدث 3)
+  sortedOrders.forEach((order,index)=>{
     const row = document.createElement("tr");
     const drinks = order.drinksOrder.map(d=>{
       const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
@@ -175,7 +178,7 @@ function renderOrders() {
     }).join('، ');
 
     row.innerHTML = `
-      <td><strong>#${index+4}</strong> - ${order.name}</td>
+      <td><strong>#${index+1}</strong> - ${order.name}</td>
       <td>${drinks}</td>
       <td>${order.total} ₪</td>
       <td>${order.date} ${order.time}</td>
@@ -186,6 +189,7 @@ function renderOrders() {
   });
 }
 
+// جلب البيانات من Firebase وتشغيل الصوت عند وجود طلب جديد
 db.collection("orders").onSnapshot(snapshot=>{
   const newOrders = snapshot.docs.map(doc=>{
     const data = doc.data();
