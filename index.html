@@ -137,15 +137,9 @@ function renderOrders() {
   latestContainer.innerHTML = "";
   tableBody.innerHTML = "";
 
-  // ترتيب الطلبات حسب التاريخ + الوقت (الأحدث أولاً)
-  const sortedOrders = orders.sort((a, b) => {
-    const dateA = new Date(`${a.date}T${a.time}`);
-    const dateB = new Date(`${b.date}T${b.time}`);
+  w Date(`${b.date}T${b.time}`);
     return dateB - dateA;
   });
-
-  const latestOrders = sortedOrders.slice(0, 3);
-  const otherOrders = sortedOrders.slice(3);
 
   latestOrders.forEach((order, index) => {
     const div = document.createElement("div");
@@ -155,6 +149,18 @@ function renderOrders() {
       const sugar = d.sugarChoice ? '(مع سكر)' : '(بدون سكر)';
       return `${d.drinkName} ×${d.quantity} ${sugar}`;
     }).join('، ');
+
+    div.innerHTML = `
+      <h3>${translations[currentLang].latest} #${index + 1}</h3>
+      <p><strong>${order.name}</strong></p>
+      <p><strong>${translations[currentLang].orders}</strong>: ${drinks}</p>
+      <p>${translations[currentLang].payment}: <strong>${order.paymentMethod || 'Cash'}</strong></p>
+      <p class="price">${translations[currentLang].total}: ${order.total} ₪</p>
+      <p>${translations[currentLang].date}: ${order.date} ${order.time}</p>
+      <span class="status ${order.status}">${translations[currentLang][order.status]}</span>
+    `;
+    latestContainer.appendChild(div);
+});
 
     div.innerHTML = `
       <h3>طلب رقم #${index + 1}</h3>
