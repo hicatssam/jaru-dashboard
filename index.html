@@ -120,13 +120,12 @@ function renderOrders() {
 
   if(!orders.length) return;
 
-  // ترتيب الطلبات حسب التاريخ + الوقت (الأحدث أولاً)
-  const sortedOrders = orders.sort((a,b) => {
-    const dtA = new Date(`${a.date}T${a.time}`);
-    const dtB = new Date(`${b.date}T${b.time}`);
-    return dtB - dtA;
-  });
-
+const sortedOrders = orders.sort((a, b) => {
+  // دمج التاريخ والوقت
+  const dateTimeA = Date.parse(`${a.date} ${a.time}`);
+  const dateTimeB = Date.parse(`${b.date} ${b.time}`);
+  return dateTimeB - dateTimeA; // الأحدث أولاً
+});
   const latestOrders = sortedOrders.slice(0,3);
   const otherOrders = sortedOrders.slice(3);
 
