@@ -10,7 +10,6 @@ header { background-color: #FFC501; padding: 20px; text-align: center; position:
 header h1 { margin:0; color:#222; font-size:32px; }
 header img { height:60px; position:absolute; right:20px; top:15px; }
 .lang-toggle { position:absolute; top:20px; left:20px; background:#fff; border:1px solid #ccc; border-radius:6px; padding:5px 10px; cursor:pointer; font-size:14px; }
-
 .container { max-width:1200px; margin:0 auto; padding:20px; }
 .card-orders { display:flex; flex-wrap:wrap; gap:20px; margin:30px 0; }
 .order-card { background: linear-gradient(135deg, #fff8e1, #ffe082); border-radius:20px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1); flex:1 1 calc(33.333% - 20px); min-width:280px; transition:0.3s ease; position: relative; }
@@ -19,29 +18,15 @@ header img { height:60px; position:absolute; right:20px; top:15px; }
 .order-card p {margin:5px 0;}
 .order-card .price {font-weight:bold; color:#e53935;}
 .order-card .status {padding:6px 12px; border-radius:20px; font-size:14px; font-weight:bold; display:inline-block; margin-top:10px;}
-.order-card .new-badge {
-  position: absolute;
-  top: -10px;
-  left: -10px;
-  background-color: #e53935;
-  color: #fff;
-  font-size: 12px;
-  font-weight: bold;
-  padding: 6px 12px;
-  border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-}
-
+.order-card .new-badge { position: absolute; top: -10px; left: -10px; background-color: #e53935; color: #fff; font-size: 12px; font-weight: bold; padding: 6px 12px; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
 table { width:100%; border-collapse: collapse; background-color:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
 th, td { padding:12px 10px; text-align:center; font-size:14px; word-wrap:break-word; }
 th { background-color:#ffe082; color:#444; }
 tr:nth-child(even) {background-color:#f9f9f9;}
-
+select.payment-select { padding:5px; border-radius:6px; border:1px solid #ccc; cursor:pointer; }
 #exportExcelBtn { background: linear-gradient(135deg, #ff7e5f, #feb47b); color: #fff; border: none; padding: 12px 20px; font-size: 16px; border-radius: 10px; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2); margin-bottom: 20px; }
 #exportExcelBtn:hover { transform: translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.3); }
-
 footer { background-color:#333; color:white; text-align:center; padding:15px 0; margin-top:40px; }
-
 @media (max-width: 992px) { .order-card { flex:1 1 calc(50% - 20px); } }
 @media (max-width: 600px) { .order-card { flex:1 1 100%; } header h1 { font-size:24px; } th, td { font-size:12px; padding:8px; } #exportExcelBtn { font-size:14px; padding:10px 15px; } }
 </style>
@@ -72,6 +57,7 @@ footer { background-color:#333; color:white; text-align:center; padding:15px 0; 
 <th id="th-total">المبلغ | Total</th>
 <th id="th-date">التاريخ | Date</th>
 <th id="th-payment">طريقة الدفع | Payment</th>
+<th id="th-payment-status">حالة الدفع | Payment Status</th>
 <th id="th-status">الحالة | Status</th>
 </tr>
 </thead>
@@ -103,8 +89,8 @@ const notificationSound = document.getElementById("notificationSound");
 let soundEnabled = false;
 
 const translations = {
-  ar: {pageTitle:"تفاصيل الطلبات - الجرو", latest:"أحدث 3 طلبات", all:"جميع الطلبات", customer:"الزبون", orders:"الطلبات", total:"المبلغ", date:"التاريخ", payment:"طريقة الدفع", status:"الحالة", confirmed:"مؤكد", canceled:"ملغي", footer:"&copy; 2025 Al Jarou. جميع الحقوق محفوظة.", button:"English"},
-  en: {pageTitle:"Order Details - Al Jarou", latest:"Latest 3 Orders", all:"All Orders", customer:"Customer", orders:"Orders", total:"Total", date:"Date", payment:"Payment Method", status:"Status", confirmed:"Confirmed", canceled:"Canceled", footer:"&copy; 2025 Al Jarou. All rights reserved.", button:"العربية"}
+  ar: {pageTitle:"تفاصيل الطلبات - الجرو", latest:"أحدث 3 طلبات", all:"جميع الطلبات", customer:"الزبون", orders:"الطلبات", total:"المبلغ", date:"التاريخ", payment:"طريقة الدفع", paymentStatus:"حالة الدفع", status:"الحالة", confirmed:"مؤكد", canceled:"ملغي", paid:"مدفوع", unpaid:"غير مدفوع", footer:"&copy; 2025 Al Jarou. جميع الحقوق محفوظة.", button:"English"},
+  en: {pageTitle:"Order Details - Al Jarou", latest:"Latest 3 Orders", all:"All Orders", customer:"Customer", orders:"Orders", total:"Total", date:"Date", payment:"Payment Method", paymentStatus:"Payment Status", status:"Status", confirmed:"Confirmed", canceled:"Canceled", paid:"Paid", unpaid:"Unpaid", footer:"&copy; 2025 Al Jarou. All rights reserved.", button:"العربية"}
 };
 
 let currentLang = 'ar';
@@ -120,6 +106,7 @@ function toggleLang() {
   document.getElementById('th-total').textContent = t.total;
   document.getElementById('th-date').textContent = t.date;
   document.getElementById('th-payment').textContent = t.payment;
+  document.getElementById('th-payment-status').textContent = t.paymentStatus;
   document.getElementById('th-status').textContent = t.status;
   document.getElementById('footer-text').innerHTML = t.footer;
   document.querySelector('.lang-toggle').textContent = t.button;
@@ -146,22 +133,26 @@ function renderOrders() {
   // عرض أحدث 3 طلبات
   const latestOrders = sortedOrders.slice(0,3);
   latestOrders.forEach((order,index)=>{
-    const div = document.createElement("div");
-    div.className = "order-card";
-
     const drinks = order.drinksOrder.map(d=>{
-      // فقط المشروبات لها خيار السكر
       const isBeverage = ['Coffee','Tea'].includes(d.drinkName);
       const sugar = isBeverage ? (d.sugarChoice ? '(مع سكر)' : '(بدون سكر)') : '';
       return `${d.drinkName} ×${d.quantity} ${sugar}`;
     }).join('، ');
 
+    const div = document.createElement("div");
+    div.className = "order-card";
     div.innerHTML = `
       <div class="new-badge">New</div>
       <h3>${translations[currentLang].latest} #${index+1}</h3>
       <p><strong>${order.name}</strong></p>
       <p><strong>${translations[currentLang].orders}</strong>: ${drinks}</p>
       <p>${translations[currentLang].payment}: <strong>${order.paymentMethod || 'Cash'}</strong></p>
+      <p>${translations[currentLang].paymentStatus}: 
+        <select class="payment-select" onchange="updatePaymentStatus('${order.id}',this.value)">
+          <option value="paid" ${order.paymentStatus==='paid'?'selected':''}>${translations[currentLang].paid}</option>
+          <option value="unpaid" ${order.paymentStatus==='unpaid'?'selected':''}>${translations[currentLang].unpaid}</option>
+        </select>
+      </p>
       <p class="price">${translations[currentLang].total}: ${order.total} ₪</p>
       <p>${translations[currentLang].date}: ${order.date} ${order.time}</p>
       <span class="status ${order.status}">${translations[currentLang][order.status]}</span>
@@ -171,23 +162,36 @@ function renderOrders() {
 
   // عرض كل الطلبات في الجدول
   sortedOrders.forEach((order,index)=>{
-    const row = document.createElement("tr");
     const drinks = order.drinksOrder.map(d=>{
       const isBeverage = ['Coffee','Tea'].includes(d.drinkName);
       const sugar = isBeverage ? (d.sugarChoice ? '(مع سكر)' : '(بدون سكر)') : '';
       return `${d.drinkName} ×${d.quantity} ${sugar}`;
     }).join('، ');
 
+    const row = document.createElement("tr");
     row.innerHTML = `
       <td><strong>#${index+1}</strong> - ${order.name}</td>
       <td>${drinks}</td>
       <td>${order.total} ₪</td>
       <td>${order.date} ${order.time}</td>
       <td>${order.paymentMethod || 'Cash'}</td>
+      <td>
+        <select class="payment-select" onchange="updatePaymentStatus('${order.id}',this.value)">
+          <option value="paid" ${order.paymentStatus==='paid'?'selected':''}>${translations[currentLang].paid}</option>
+          <option value="unpaid" ${order.paymentStatus==='unpaid'?'selected':''}>${translations[currentLang].unpaid}</option>
+        </select>
+      </td>
       <td><span class="status ${order.status}">${translations[currentLang][order.status]}</span></td>
     `;
     tableBody.appendChild(row);
   });
+}
+
+// تحديث حالة الدفع في Firebase
+function updatePaymentStatus(orderId, status) {
+  db.collection("orders").doc(orderId).update({ paymentStatus: status })
+  .then(()=>console.log(`Payment status updated for order ${orderId} to ${status}`))
+  .catch(err=>console.error("Error updating payment status:", err));
 }
 
 // جلب البيانات من Firebase وتشغيل الصوت عند وجود طلب جديد
@@ -202,6 +206,7 @@ db.collection("orders").onSnapshot(snapshot=>{
       date: data.date,
       time: data.time,
       paymentMethod: data.paymentMethod || 'Cash',
+      paymentStatus: data.paymentStatus || 'unpaid',
       status: data.status || 'confirmed'
     };
   });
@@ -226,6 +231,5 @@ document.getElementById('exportExcelBtn').addEventListener('click', ()=>{
   XLSX.writeFile(wb,'Orders.xlsx');
 });
 </script>
-
 </body>
 </html>
