@@ -23,7 +23,7 @@ table { width:100%; border-collapse: collapse; background-color:#fff; border-rad
 th, td { padding:12px 10px; text-align:center; font-size:14px; word-wrap:break-word; }
 th { background-color:#ffe082; color:#444; }
 tr:nth-child(even) {background-color:#f9f9f9;}
-select.payment-select { padding:5px; border-radius:6px; border:1px solid #ccc; cursor:pointer; }
+select.payment-select { padding:5px; border-radius:6px; border:1px solid #ccc; cursor:pointer; font-weight:bold; }
 #exportExcelBtn { background: linear-gradient(135deg, #ff7e5f, #feb47b); color: #fff; border: none; padding: 12px 20px; font-size: 16px; border-radius: 10px; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2); margin-bottom: 20px; }
 #exportExcelBtn:hover { transform: translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.3); }
 footer { background-color:#333; color:white; text-align:center; padding:15px 0; margin-top:40px; }
@@ -39,7 +39,6 @@ footer { background-color:#333; color:white; text-align:center; padding:15px 0; 
 <button class="lang-toggle" onclick="toggleLang()">English</button>
 </header>
 
-<button id="enableSoundBtn">تفعيل صوت الإشعارات</button>
 <audio id="notificationSound" src="sounds/confirm.mp3" preload="auto"></audio>
 
 <div class="container">
@@ -113,7 +112,6 @@ function toggleLang() {
   renderOrders();
 }
 
-// تفعيل الصوت
 document.getElementById("enableSoundBtn").addEventListener("click", () => {
   soundEnabled = true;
   notificationSound.play().then(()=>notificationSound.pause());
@@ -139,6 +137,8 @@ function renderOrders() {
       return `${d.drinkName} ×${d.quantity} ${sugar}`;
     }).join('، ');
 
+    const paymentColor = order.paymentStatus==='paid'?'#4caf50':'#f44336';
+
     const div = document.createElement("div");
     div.className = "order-card";
     div.innerHTML = `
@@ -148,7 +148,7 @@ function renderOrders() {
       <p><strong>${translations[currentLang].orders}</strong>: ${drinks}</p>
       <p>${translations[currentLang].payment}: <strong>${order.paymentMethod || 'Cash'}</strong></p>
       <p>${translations[currentLang].paymentStatus}: 
-        <select class="payment-select" onchange="updatePaymentStatus('${order.id}',this.value)">
+        <select class="payment-select" onchange="updatePaymentStatus('${order.id}',this.value)" style="color:${paymentColor};">
           <option value="paid" ${order.paymentStatus==='paid'?'selected':''}>${translations[currentLang].paid}</option>
           <option value="unpaid" ${order.paymentStatus==='unpaid'?'selected':''}>${translations[currentLang].unpaid}</option>
         </select>
@@ -160,13 +160,15 @@ function renderOrders() {
     latestContainer.appendChild(div);
   });
 
-  // عرض كل الطلبات في الجدول
+  // جدول الطلبات
   sortedOrders.forEach((order,index)=>{
     const drinks = order.drinksOrder.map(d=>{
       const isBeverage = ['Coffee','Tea'].includes(d.drinkName);
       const sugar = isBeverage ? (d.sugarChoice ? '(مع سكر)' : '(بدون سكر)') : '';
       return `${d.drinkName} ×${d.quantity} ${sugar}`;
     }).join('، ');
+
+    const paymentColor = order.paymentStatus==='paid'?'#4caf50':'#f44336';
 
     const row = document.createElement("tr");
     row.innerHTML = `
@@ -176,7 +178,7 @@ function renderOrders() {
       <td>${order.date} ${order.time}</td>
       <td>${order.paymentMethod || 'Cash'}</td>
       <td>
-        <select class="payment-select" onchange="updatePaymentStatus('${order.id}',this.value)">
+        <select class="payment-select" onchange="updatePaymentStatus('${order.id}',this.value)" style="color:${paymentColor}; font-weight:bold;">
           <option value="paid" ${order.paymentStatus==='paid'?'selected':''}>${translations[currentLang].paid}</option>
           <option value="unpaid" ${order.paymentStatus==='unpaid'?'selected':''}>${translations[currentLang].unpaid}</option>
         </select>
@@ -190,7 +192,7 @@ function renderOrders() {
 // تحديث حالة الدفع في Firebase
 function updatePaymentStatus(orderId, status) {
   db.collection("orders").doc(orderId).update({ paymentStatus: status })
-  .then(()=>console.log(`Payment status updated for order ${orderId} to ${status}`))
+  .then(()=>renderOrders())
   .catch(err=>console.error("Error updating payment status:", err));
 }
 
