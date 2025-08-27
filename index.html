@@ -241,11 +241,45 @@ db.collection("orders").onSnapshot(snapshot=>{
 
 // تصدير Excel
 document.getElementById('exportExcelBtn').addEventListener('click', ()=>{
-  const table = document.querySelector('table');
-  if(!table) return alert("الجدول غير موجود!");
-  const wb = XLSX.utils.table_to_book(table,{sheet:"Orders"});
-  XLSX.writeFile(wb,'Orders.xlsx');
+  if(!orders.length) return alert("لا توجد بيانات للتصدير!");
+
+  const data = [];
+  // العناوين
+  data.push([
+    translations[currentLang].customer,
+    translations[currentLang].orders,
+    translations[currentLang].total,
+    translations[currentLang].date,
+    translations[currentLang].payment,
+    translations[currentLang].paymentStatus,
+    translations[currentLang].status
+  ]);
+
+  // إضافة كل الطلبات
+  orders.forEach((order, index) => {
+    const drinks = order.drinksOrder.map(d=>{
+      const isBeverage = ['Coffee','Tea'].includes(d.drinkName);
+      const sugar = isBeverage ? (d.sugarChoice ? '(مع سكر)' : '(بدون سكر)') : '';
+      return `${d.drinkName} ×${d.quantity} ${sugar}`;
+    }).join('، ');
+
+    data.push([
+      `#${index+1} - ${order.name}`,
+      drinks,
+      `${order.total} ₪`,
+      `${order.date} ${order.time}`,
+      order.paymentMethod || 'Cash',
+      translations[currentLang][order.paymentStatus],
+      translations[currentLang][order.status]
+    ]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Orders");
+  XLSX.writeFile(wb, 'Orders.xlsx');
 });
+  
 </script>
 </body>
 </html>
