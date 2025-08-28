@@ -217,13 +217,7 @@ function updatePaymentStatus(orderId,status,selectElement){
 }
 
   
-function showAlert(callback){
-  alertCallback = callback;
-  alertText.textContent = translations[currentLang].alertText;
-  confirmBtn.textContent = translations[currentLang].alertConfirm;
-  cancelBtn.textContent = translations[currentLang].alertCancel;
-  alertOverlay.classList.add("alert-show");
-}
+
 // حذف طلب
 function deleteOrder(orderId){
   db.collection("orders").doc(orderId).delete().catch(err=>console.error(err));
