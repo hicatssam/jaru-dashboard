@@ -44,8 +44,7 @@ footer { background:#333; color:white; text-align:center; padding:15px 0; margin
 .alert-box button:hover { transform:scale(1.05);}
 @media (max-width:992px){.order-card{flex:1 1 calc(50% - 20px);}}
 @media (max-width:600px){.order-card{flex:1 1 100%;} header h1{font-size:24px;} th, td{font-size:12px;padding:8px;} #exportExcelBtn,#deleteAllBtn{font-size:14px; padding:10px 15px;}}
-  
-
+</style>
 </head>
 <body>
 
@@ -215,8 +214,6 @@ function updatePaymentStatus(orderId,status,selectElement){
     if(cardBadge) cardBadge.className=`payment-badge ${status}`, cardBadge.textContent=translations[currentLang][status];
   }).catch(err=>console.error("Error updating payment status:",err));
 }
-
-  
 
 // حذف طلب
 function deleteOrder(orderId){
