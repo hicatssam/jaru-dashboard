@@ -34,7 +34,7 @@ select.payment-select { padding:5px; border-radius:6px; border:1px solid #ccc; c
 .delete-btn { background:linear-gradient(135deg,#f44336,#e53935); color:#fff; border:none; padding:6px 12px; border-radius:8px; cursor:pointer; transition:0.2s; }
 .delete-btn:hover { transform:scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.3);}
 footer { background:#333; color:white; text-align:center; padding:15px 0; margin-top:40px; }
-/* Alert خرافي */
+/* Alert */
 .alert-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:999; visibility:hidden; opacity:0; transition:0.3s; }
 .alert-show { visibility:visible; opacity:1; }
 .alert-box { background:#fff; padding:30px 20px; border-radius:20px; text-align:center; max-width:400px; width:90%; box-shadow:0 15px 35px rgba(0,0,0,0.3); transform: scale(0.5); transition: transform 0.3s ease, opacity 0.3s ease; opacity:0;}
@@ -95,16 +95,13 @@ footer { background:#333; color:white; text-align:center; padding:15px 0; margin
   </div>
 </div>
 
+<!-- صوت تأكيد -->
+<audio id="orderSound" src="sounds/confirm.mp3" preload="auto"></audio>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-
-
-
-  
-
-
 // Firebase
 const firebaseConfig={
 apiKey:"AIzaSyCEsjPeY7773MQeSyiL6M1n4RHRl5TGAyk",
@@ -119,6 +116,7 @@ const db=firebase.firestore();
 
 let orders=[];
 let currentLang='ar';
+let lastOrderIds=[]; // للتأكد من الطلبات الجديدة فقط
 
 const translations={
   ar:{pageTitle:"تفاصيل الطلبات - الجرو", latest:"أحدث 3 طلبات", all:"جميع الطلبات", customer:"الزبون", orders:"الطلبات", total:"المبلغ", date:"التاريخ", payment:"طريقة الدفع", paymentStatus:"حالة الدفع", status:"الحالة", confirmed:"مؤكد", canceled:"ملغي", paid:"مدفوع", unpaid:"غير مدفوع", footer:"&copy; 2025 Al Jarou. جميع الحقوق محفوظة.", button:"English", alertText:"هل أنت متأكد؟", alertYes:"نعم", alertCancel:"إلغاء", deleteAll:"حذف كل الطلبات", deleteSingle:"حذف"}, 
@@ -163,7 +161,7 @@ function renderOrders(){
 
   const sortedOrders=orders.sort((a,b)=>Date.parse(`${b.date} ${b.time}`)-Date.parse(`${a.date} ${a.time}`));
 
-  // البطاقات (نصوص فقط)
+  // البطاقات
   const latestOrders=sortedOrders.slice(0,3);
   latestOrders.forEach((order,index)=>{
     const drinks=order.drinksOrder.map(d=>{
@@ -216,8 +214,6 @@ function updatePaymentStatus(orderId,status,selectElement){
   .then(()=>{
     const tableBadge=selectElement.closest('td')?.querySelector('.payment-badge-table');
     if(tableBadge) tableBadge.className=`payment-badge-table ${status}`, tableBadge.textContent=translations[currentLang][status];
-    const cardBadge=document.querySelector(`.order-card:nth-child(${orders.findIndex(o=>o.id===orderId)+1}) .payment-badge`);
-    if(cardBadge) cardBadge.className=`payment-badge ${status}`, cardBadge.textContent=translations[currentLang][status];
   }).catch(err=>console.error("Error updating payment status:",err));
 }
 
@@ -233,27 +229,25 @@ document.getElementById("deleteAllBtn").addEventListener("click",()=>{
   });
 });
 
-// Alert خرافي
+// Alert
 function confirmDelete(callback){
   alertCallback = callback;
   alertText.textContent = translations[currentLang].alertText;
   alertOverlay.classList.add("alert-show");
 }
-
-// زر التأكيد في Alert
 confirmBtn.addEventListener("click", ()=>{
   if(alertCallback) alertCallback();
   alertOverlay.classList.remove("alert-show");
   alertCallback = null;
 });
-
-// زر الإلغاء في Alert
 cancelBtn.addEventListener("click", ()=>{
   alertOverlay.classList.remove("alert-show");
   alertCallback = null;
 });
 
-// جلب البيانات من Firebase وعرضها
+// جلب البيانات من Firebase + تشغيل صوت للطلبات الجديدة
+const orderSound=document.getElementById("orderSound");
+
 db.collection("orders").onSnapshot(snapshot=>{
   const newOrders = snapshot.docs.map(doc=>{
     const data = doc.data();
@@ -269,15 +263,24 @@ db.collection("orders").onSnapshot(snapshot=>{
       status: data.status || 'confirmed'
     };
   });
-  orders = newOrders;
+
+  const newIds = newOrders.map(o=>o.id);
+  const addedOrders = newIds.filter(id=>!lastOrderIds.includes(id));
+
+  if(addedOrders.length > 0 && lastOrderIds.length > 0){
+    orderSound.currentTime=0;
+    orderSound.play().catch(err=>console.log("Autoplay blocked:",err));
+  }
+
+  orders=newOrders;
+  lastOrderIds=newIds;
   renderOrders();
 });
 
-// تصدير Excel بدون أزرار أو select
+// تصدير Excel
 document.getElementById('exportExcelBtn').addEventListener('click', ()=>{
   const table = document.querySelector('table');
   if(!table) return alert("الجدول غير موجود!");
-  // استنساخ الجدول وحذف select وزر الحذف قبل التصدير
   const clone = table.cloneNode(true);
   clone.querySelectorAll('select, button').forEach(el=>el.remove());
   const wb = XLSX.utils.table_to_book(clone,{sheet:"Orders"});
