@@ -119,26 +119,8 @@ footer { background:#333; color:white; text-align:center; padding:15px 0; margin
   const db = firebase.firestore();
   const messaging = firebase.messaging();
 
-  // طلب إذن الإشعارات (ممكن تعملها اختيارية)
-  Notification.requestPermission().then(permission => {
-    if (permission === "granted") {
-      messaging.getToken({
-        vapidKey: "🔑 ضع هنا VAPID KEY من Firebase Console"
-      }).then(token => {
-        console.log("FCM Token:", token);
-        // ممكن تخزن التوكن في Firestore
-      });
-    }
-  });
 
-  // استقبال إشعار لما الصفحة مفتوحة
-  messaging.onMessage(payload => {
-    console.log("Message received:", payload);
-    new Notification(payload.notification.title, {
-      body: payload.notification.body,
-      icon: payload.notification.icon
-    });
-  });
+
 
   // 🔔 عرض الطلبات من Firestore
   let orders = [];
