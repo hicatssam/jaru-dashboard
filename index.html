@@ -99,6 +99,47 @@ footer { background:#333; color:white; text-align:center; padding:15px 0; margin
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
+
+
+<audio id="orderSound" src="sounds/notification.mp3" preload="auto"></audio>
+  
+const orderSound = document.getElementById("orderSound");
+
+
+let lastOrderIds = [];
+
+
+db.collection("orders").onSnapshot(snapshot=>{
+  const newOrders = snapshot.docs.map(doc=>{
+    const data = doc.data();
+    return {
+      id: doc.id,
+      name: data.customerName,
+      drinksOrder: data.drinksOrder,
+      total: data.totalPrice,
+      date: data.date,
+      time: data.time,
+      paymentMethod: data.paymentMethod || 'Cash',
+      paymentStatus: data.paymentStatus || 'unpaid',
+      status: data.status || 'confirmed'
+    };
+  });
+
+  
+  const newIds = newOrders.map(o => o.id);
+  const addedOrders = newIds.filter(id => !lastOrderIds.includes(id));
+  
+  if (addedOrders.length > 0 && lastOrderIds.length > 0) {
+  
+    orderSound.currentTime = 0;
+    orderSound.play().catch(err=>console.log("Autoplay blocked:",err));
+  }
+
+  orders = newOrders;
+  lastOrderIds = newIds;
+  renderOrders();
+});
+
 // Firebase
 const firebaseConfig={
 apiKey:"AIzaSyCEsjPeY7773MQeSyiL6M1n4RHRl5TGAyk",
