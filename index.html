@@ -101,6 +101,44 @@ footer { background:#333; color:white; text-align:center; padding:15px 0; margin
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
+
+  <script>
+   const firebaseConfig = {
+    apiKey: "BP2Jy1GwjOMJ0j8e0qptVJY1ebVs5nLQMJS3vOxkbwtpLNMalu5WO4o4zWteyY2lqhkw9Wybtdj_VV8QlAXIpKE",
+    authDomain: "jaru-drinks.firebaseapp.com",
+    projectId: "jaru-drinks",
+    messagingSenderId: "317969024088",
+    appId: "1:317969024088:web:d99f66953f06572779f62d",
+  };
+
+  // تشغيل Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  const messaging = firebase.messaging();
+
+  // طلب الإذن
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+      messaging.getToken({
+        vapidKey: "🔑 حط هنا VAPID KEY من Firebase console"
+      }).then(token => {
+        console.log("FCM Token:", token);
+        // احفظ التوكن في Firestore عشان تبعتله إشعارات
+      });
+    }
+  });
+
+  // استقبال الإشعار لما الصفحة مفتوحة
+  messaging.onMessage(payload => {
+    console.log("Message received: ", payload);
+    new Notification(payload.notification.title, {
+      body: payload.notification.body,
+      icon: payload.notification.icon
+    });
+  });
+</script>
 <script>
 // Firebase
 const firebaseConfig={
