@@ -40,7 +40,19 @@ footer { background:#333; color:white; text-align:center; padding:15px 0; margin
 .alert-box { background:#fff; padding:30px 20px; border-radius:20px; text-align:center; max-width:400px; width:90%; box-shadow:0 15px 35px rgba(0,0,0,0.3); transform: scale(0.5); transition: transform 0.3s ease, opacity 0.3s ease; opacity:0;}
 .alert-show .alert-box { transform:scale(1); opacity:1;}
 .alert-box h3 { margin:15px 0 0; font-size:22px; color:#222;}
-.alert-box button { margin:10px; min-width:100px; padding:12px 20px; border-radius:12px; font-weight:bold; cursor:pointer; transition:0.2s; border:none; }
+.alert-box button {
+  margin:10px;
+  min-width:100px;
+  padding:12px 20px;
+  border-radius:12px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.2s;
+  border:none;
+  background:#FFC501;
+  color:#222;
+  font-size:16px;
+}
 .alert-box button:hover { transform:scale(1.05);}
 @media (max-width:992px){.order-card{flex:1 1 calc(50% - 20px);}}
 @media (max-width:600px){.order-card{flex:1 1 100%;} header h1{font-size:24px;} th, td{font-size:12px;padding:8px;} #exportExcelBtn,#deleteAllBtn{font-size:14px; padding:10px 15px;}}
