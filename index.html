@@ -95,13 +95,12 @@ footer { background:#333; color:white; text-align:center; padding:15px 0; margin
   </div>
 </div>
 
-<!-- صوت تأكيد -->
-<audio id="orderSound" src="sounds/confirm.mp3" preload="auto"></audio>
+
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 
 <script>
   // ✅ تعريف واحد فقط
@@ -117,10 +116,6 @@ footer { background:#333; color:white; text-align:center; padding:15px 0; margin
   // تشغيل Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
-  const messaging = firebase.messaging();
-
-
-
 
   // 🔔 عرض الطلبات من Firestore
   let orders = [];
